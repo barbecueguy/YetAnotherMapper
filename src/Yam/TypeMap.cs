@@ -9,8 +9,12 @@ namespace Yams
     public class TypeMap
     {
         public Type SourceType;
-        public Type DestinationType;
-        private List<PropertyMap> propertyMaps = new List<PropertyMap>();
+        public Type DestinationType;        
+
+        public TypeMap()
+        {
+            this.propertyMaps = new List<PropertyMap>();
+        }
 
         public ReadOnlyCollection<PropertyMap> PropertyMaps { get { return new ReadOnlyCollection<PropertyMap>(propertyMaps); } }
 
@@ -51,5 +55,7 @@ namespace Yams
 
             return destination;
         }
+
+        private List<PropertyMap> propertyMaps;
     }
 }

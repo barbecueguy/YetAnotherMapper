@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YamTestClasses", "tests\Yam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CandiedYamUnitTests", "tests\CandiedYamUnitTests\CandiedYamUnitTests.csproj", "{FA4ABCC2-AA9B-4AC1-8C31-0E28D1CED3C5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{84728F8A-9E47-4158-A78A-B03BEC606920}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,5 +42,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{51C625D5-0457-469D-A28F-242A1B062172} = {84728F8A-9E47-4158-A78A-B03BEC606920}
+		{6A5BAE16-6F37-4928-8C1E-D7359925AE11} = {84728F8A-9E47-4158-A78A-B03BEC606920}
+		{FA4ABCC2-AA9B-4AC1-8C31-0E28D1CED3C5} = {84728F8A-9E47-4158-A78A-B03BEC606920}
 	EndGlobalSection
 EndGlobal

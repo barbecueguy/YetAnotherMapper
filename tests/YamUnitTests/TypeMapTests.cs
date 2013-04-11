@@ -9,18 +9,12 @@ namespace SimpleMapperUnitTests
     [TestClass]
     public class TypeMapTests
     {
-        [TestInitialize]
-        public void Initialize()
-        {
-            Yam.Clear();
-        }
-
         [TestMethod]
         public void Map_MapsCommonlyNamedProperties_GivenTwoDifferentTypes()
         {
             Product source = TestData.Product;
-            var yam = Yam.Map(typeof(Product), typeof(SaleItem));
-            var result = yam.Map(source);
+            var map = new TypeMap { SourceType = typeof(Product), DestinationType = typeof(SaleItem) };
+            var result = map.Map(source);
 
             Assert.IsInstanceOfType(result, typeof(SaleItem));
             var destination = result as SaleItem;
@@ -33,7 +27,7 @@ namespace SimpleMapperUnitTests
         public void Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndAMappingFunction()
         {
             Product source = TestData.Product;
-            TypeMap map = Yam.Map(typeof(Product), typeof(SaleItem));
+            TypeMap map = new TypeMap { SourceType = typeof(Product), DestinationType = typeof(SaleItem) };
             map.Add(new PropertyMap
             {
                 DestinationProperty = map.DestinationType.GetProperty("Quantity"),
@@ -58,7 +52,7 @@ namespace SimpleMapperUnitTests
         public void Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndASourceAndDestinationProperty()
         {
             Product source = TestData.Product;
-            TypeMap map = Yam.Map(typeof(Product), typeof(SaleItem));
+            TypeMap map = new TypeMap { DestinationType = typeof(SaleItem), SourceType = typeof(Product) };
             map.Add(new PropertyMap
             {
                 DestinationProperty = map.DestinationType.GetProperty("Quantity"),
