@@ -61,7 +61,7 @@
       <Project>{6a5bae16-6f37-4928-8c1e-d7359925ae11}</Project>
       <Name>YamTestClasses</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Yam\Yam.csproj">
+    <ProjectReference Include="..\..\src\Yam\Yam.csproj">
       <Project>{61bc2a9a-4e00-418e-824f-27f8f7872b81}</Project>
       <Name>Yam</Name>
     </ProjectReference>
