@@ -12,9 +12,13 @@ namespace Yams
 
         public void Map(object source, object destination)
         {
+            if (DestinationProperty == null)
+                throw new InvalidOperationException("DestinationProperty cannot be null");
+
             if (MappingFunction == null && SourceProperty == null)
             {
-                DestinationProperty.SetValue(destination, GetDefaultValue(DestinationProperty.PropertyType), null);
+                var defaultValue = GetDefaultValue(DestinationProperty.PropertyType);
+                DestinationProperty.SetValue(destination, defaultValue, null);
                 return;
             }
 

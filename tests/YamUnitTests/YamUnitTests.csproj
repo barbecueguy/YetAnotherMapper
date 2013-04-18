@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="TypeMapTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PropertyMapTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\YamTestClasses\YamTestClasses.csproj">

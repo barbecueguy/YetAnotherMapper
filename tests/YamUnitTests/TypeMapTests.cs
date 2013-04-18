@@ -43,7 +43,7 @@ namespace SimpleMapperUnitTests
 
             Assert.IsInstanceOfType(result, typeof(SaleItem));
             var destination = result as SaleItem;
-            Assert.AreEqual(destination.Description, source.Description);
+            Assert.AreEqual(source.Description, destination.Description, "Expected descriptions to be equal, but found {0}source: {1}{0} and destination: {1}", Environment.NewLine, source.Description, destination.Description);
             Assert.AreEqual(destination.Id, source.Id);
             Assert.AreEqual(destination.Quantity, 1);
         }
