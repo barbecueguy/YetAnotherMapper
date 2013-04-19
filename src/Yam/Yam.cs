@@ -11,16 +11,17 @@ namespace Yams
         public static TypeMap Map(Type from, Type to)
         {
             var map = maps.FirstOrDefault(mp => mp.SourceType == from && mp.DestinationType == to);
-            if (map != null)
-                return map;
-
-            map = new TypeMap
+            if (map == null)
             {
-                DestinationType = to,
-                SourceType = from
-            };
+                map = new TypeMap
+                {
+                    DestinationType = to,
+                    SourceType = from
+                };
 
-            maps.Add(map);
+                maps.Add(map);
+            }
+
             return map;
         }
 

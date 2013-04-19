@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Reflection;
+using System.Linq;
 
 namespace Yams
 {
@@ -14,6 +14,18 @@ namespace Yams
         public TypeMap()
         {
             this.propertyMaps = new List<PropertyMap>();
+        }
+
+        public TypeMap(Type sourceType, Type destinationType)
+            : this()
+        {
+            if (sourceType == null)
+                throw new ArgumentNullException("sourceType");
+            if (destinationType == null)
+                throw new ArgumentNullException("destinationType");
+
+            this.SourceType = sourceType;
+            this.DestinationType = destinationType;
         }
 
         public ReadOnlyCollection<PropertyMap> PropertyMaps { get { return new ReadOnlyCollection<PropertyMap>(propertyMaps); } }

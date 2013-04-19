@@ -7,12 +7,20 @@ namespace CandiedYams
 {
     public class TypeMap<TSource, TDestination> : TypeMap
     {
-        public TypeMap(TypeMap map)
+        public TypeMap()
         {
-            this.DestinationType = map.DestinationType;
+            this.DestinationType = typeof(TDestination);
+            this.SourceType = typeof(TSource);
+        }
+
+        public TypeMap(TypeMap map)
+            : this()
+        {
+            if (this.DestinationType != map.DestinationType || this.SourceType != map.SourceType)
+                throw new ArgumentOutOfRangeException("map is not the same source and destination type");
+
             foreach (var propertyMap in map.PropertyMaps)
-                this.Add(propertyMap);
-            this.SourceType = map.SourceType;
+                this.Add(propertyMap);            
         }
 
         public TDestination Map(TSource source)

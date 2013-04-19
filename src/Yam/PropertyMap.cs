@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 
 namespace Yams
@@ -12,6 +11,10 @@ namespace Yams
 
         public void Map(object source, object destination)
         {
+            if (source == null)
+                throw new ArgumentNullException("source");
+            if (destination == null)
+                throw new ArgumentNullException("destination");
             if (DestinationProperty == null)
                 throw new InvalidOperationException("DestinationProperty cannot be null");
 
@@ -41,6 +44,11 @@ namespace Yams
             }
 
             return null;
+        }
+
+        private T GetDefaultValue<T>(T t) where T : new()
+        {
+            return default(T);
         }
     }
 }

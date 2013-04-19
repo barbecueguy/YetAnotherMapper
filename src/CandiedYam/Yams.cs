@@ -7,7 +7,7 @@ using Yams;
 
 namespace CandiedYams
 {
-    public static class Yams<TSource, TDestination>
+    public static class Yam<TSource, TDestination>
     {
         public static TypeMap<TSource, TDestination> For<TProperty>(
             Expression<Func<TDestination, TProperty>> destination,

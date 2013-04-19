@@ -10,7 +10,7 @@ namespace SimpleMapperUnitTests
     public class TypeMapTests
     {
         [TestMethod]
-        public void Map_MapsCommonlyNamedProperties_GivenTwoDifferentTypes()
+        public void TypeMap_Map_MapsCommonlyNamedProperties_GivenTwoDifferentTypes()
         {
             Product source = TestData.Product;
             var map = new TypeMap { SourceType = typeof(Product), DestinationType = typeof(SaleItem) };
@@ -24,7 +24,7 @@ namespace SimpleMapperUnitTests
         }
 
         [TestMethod]
-        public void Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndAMappingFunction()
+        public void TypeMap_Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndAMappingFunction()
         {
             Product source = TestData.Product;
             TypeMap map = new TypeMap { SourceType = typeof(Product), DestinationType = typeof(SaleItem) };
@@ -49,7 +49,7 @@ namespace SimpleMapperUnitTests
         }
 
         [TestMethod]
-        public void Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndASourceAndDestinationProperty()
+        public void TypeMap_Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndASourceAndDestinationProperty()
         {
             Product source = TestData.Product;
             TypeMap map = new TypeMap { DestinationType = typeof(SaleItem), SourceType = typeof(Product) };
