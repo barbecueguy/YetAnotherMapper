@@ -45,10 +45,5 @@ namespace Yams
 
             return null;
         }
-
-        private T GetDefaultValue<T>(T t) where T : new()
-        {
-            return default(T);
-        }
     }
 }

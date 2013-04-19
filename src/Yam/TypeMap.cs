@@ -68,6 +68,6 @@ namespace Yams
             return destination;
         }
 
-        private List<PropertyMap> propertyMaps;
+        private readonly List<PropertyMap> propertyMaps;
     }
 }

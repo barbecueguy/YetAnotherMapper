@@ -6,7 +6,7 @@ namespace Yams
 {
     public static class Yam
     {
-        private static List<TypeMap> maps = new List<TypeMap>();
+        private static readonly List<TypeMap> maps = new List<TypeMap>();
 
         public static TypeMap Map(Type from, Type to)
         {
