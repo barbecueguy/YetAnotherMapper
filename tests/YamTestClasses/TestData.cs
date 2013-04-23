@@ -71,5 +71,10 @@ namespace YamTestClasses
                 };
             }
         }
+
+        public static string TestStringMappingFunction(object o)
+        {
+            return "TestDescription";
+        }
     }
 }

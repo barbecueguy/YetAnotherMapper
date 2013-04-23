@@ -55,10 +55,10 @@ namespace CandiedYamUnitTests
         }
 
         [TestMethod]
-        public void TypeMap_Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndASourceAndDestinationProperty()
+        public void TypeMap_Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndASourcePropertyAndNonLambdaMappingFunction()
         {
             TypeMap<Product, SaleItem> map = new TypeMap<Product, SaleItem>()
-                .For(dest => dest.Description, src => src.Description)
+                .For(dest => dest.Description, src => TestData.TestStringMappingFunction(src))
                 .For(dest => dest.ShippingWeight, src => src.Weight)
                 .For(dest => dest.Id, src => src.Id);
             Product source = TestData.Product;

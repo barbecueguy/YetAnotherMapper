@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Yams;
 
 namespace CandiedYams
@@ -20,7 +20,7 @@ namespace CandiedYams
                 throw new ArgumentOutOfRangeException("map is not the same source and destination type");
 
             foreach (var propertyMap in map.PropertyMaps)
-                this.Add(propertyMap);            
+                this.Add(propertyMap);
         }
 
         public TDestination Map(TSource source)
@@ -30,18 +30,24 @@ namespace CandiedYams
 
         public TypeMap<TSource, TDestination> For<TProperty>(
             Expression<Func<TDestination, TProperty>> destination,
-            Func<TSource, TProperty> mappingFunction)
+            Expression<Func<TSource, TProperty>> mappingFunction)
         {
-            var destinationType = typeof(TDestination);
-            var property = ((MemberExpression)destination.Body);
+            var propertyMap = new PropertyMap
+            {
+                DestinationProperty = GetProperty(destination),
+                MappingFunction = o => mappingFunction.Compile()((TSource)o)
+            };
 
-           this.Add(new PropertyMap
-                {
-                    DestinationProperty = destinationType.GetProperty(property.Member.Name),
-                    MappingFunction = o => mappingFunction((TSource)o)
-                });
-
+            this.Add(propertyMap);
             return this;
+        }
+
+        private PropertyInfo GetProperty<TProperty, T>(Expression<Func<T, TProperty>> function)
+        {
+            var type = typeof(T);
+            var propertyExpression = (MemberExpression)function.Body;
+            var property = type.GetProperty(propertyExpression.Member.Name);
+            return property;
         }
     }
 }
