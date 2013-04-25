@@ -31,5 +31,34 @@ namespace SimpleMapperUnitTests
 
             Assert.AreNotSame(map, Yam.Map(typeof(SaleItem), typeof(Product)), "Expected the same object reference, but found another");
         }
+
+        [TestMethod]
+        public void Yam_MapsCommonlyNamedProperties_GivenTwoDifferentObjectTypes()
+        {
+            Product source = TestData.Product;
+            var result = Yam<Product, SaleItem>.Map(source);
+
+            Assert.IsInstanceOfType(result, typeof(SaleItem));
+            Assert.AreEqual(result.Description, source.Description);
+            Assert.AreEqual(result.Id, source.Id);
+            Assert.AreEqual(result.Quantity, 0);
+        }
+
+        [TestMethod]
+        public void Yam_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndMappingFunction()
+        {
+            Product source = TestData.Product;
+            var result = Yam<Product, SaleItem>
+                .For(dest => dest.Id, src => src.Id)
+                .For(dest => dest.Description, src => src.Description)
+                .For(dest => dest.ShippingWeight, src => src.Weight)
+                .For(dest => dest.Quantity, src => 1)
+                .Map(source);
+
+            Assert.IsInstanceOfType(result, typeof(SaleItem));
+            Assert.AreEqual(result.Description, source.Description);
+            Assert.AreEqual(result.Id, source.Id);
+            Assert.AreEqual(result.Quantity, 1);
+        }
     }
 }
