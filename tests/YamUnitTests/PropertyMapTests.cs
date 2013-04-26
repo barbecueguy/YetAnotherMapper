@@ -14,7 +14,7 @@ namespace SimpleMapperUnitTests
         {
             Product product = new Product();
             SaleItem saleItem = new SaleItem();
-            PropertyMap map = new PropertyMap();
+            PropertyMap map = new PropertyMap(sourceProperty: null, destinationProperty: null);
             map.Map(product, saleItem);
         }
 
@@ -24,7 +24,7 @@ namespace SimpleMapperUnitTests
         {
             Product product = null;
             SaleItem saleItem = new SaleItem();
-            PropertyMap map = new PropertyMap();
+            PropertyMap map = new PropertyMap(sourceProperty: null, destinationProperty: null);
             map.Map(product, saleItem);
         }
 
@@ -34,7 +34,7 @@ namespace SimpleMapperUnitTests
         {
             Product product = new Product();
             SaleItem saleItem = null;
-            PropertyMap map = new PropertyMap();
+            PropertyMap map = new PropertyMap(sourceProperty: null, destinationProperty: null);
             map.Map(product, saleItem);
         }
 
@@ -43,17 +43,23 @@ namespace SimpleMapperUnitTests
         {
             SaleItem saleItem = new SaleItem();
             Product product = new Product();
-            PropertyMap map = new PropertyMap();
+            PropertyMap map = new PropertyMap(
+                sourceProperty: null,
+                destinationProperty: product.GetType().GetProperty("Id"),
+                mappingFunction: null);
 
-            map.DestinationProperty = product.GetType().GetProperty("Id");
             map.Map(saleItem, product);
             Assert.AreEqual(0, product.Id);
 
-            map.DestinationProperty = product.GetType().GetProperty("Description");
+            map = new PropertyMap(
+                destinationProperty: product.GetType().GetProperty("Description"),
+                mappingFunction: null);
             map.Map(saleItem, product);
             Assert.AreEqual(null, product.Description);
 
-            map.DestinationProperty = product.GetType().GetProperty("Weight");
+            map = new PropertyMap(
+                destinationProperty: product.GetType().GetProperty("Weight"),
+                mappingFunction: null);
             map.Map(saleItem, product);
             Assert.AreEqual(0, product.Weight);
         }
@@ -63,19 +69,22 @@ namespace SimpleMapperUnitTests
         {
             SaleItem saleItem = new SaleItem { Id = 1, Description = "Test", ShippingWeight = 3.0 };
             Product product = new Product();
-            PropertyMap map = new PropertyMap();
-            map.DestinationProperty = product.GetType().GetProperty("Id");
-            map.SourceProperty = saleItem.GetType().GetProperty("Id");
+            PropertyMap map = new PropertyMap(
+                sourceProperty: saleItem.GetType().GetProperty("Id"),
+                destinationProperty: product.GetType().GetProperty("Id"),
+                mappingFunction: null);
             map.Map(saleItem, product);
             Assert.AreEqual(saleItem.Id, product.Id);
 
-            map.DestinationProperty = product.GetType().GetProperty("Description");
-            map.SourceProperty = saleItem.GetType().GetProperty("Description");
+            map = new PropertyMap(
+                destinationProperty: product.GetType().GetProperty("Description"),
+                sourceProperty: saleItem.GetType().GetProperty("Description"));
             map.Map(saleItem, product);
             Assert.AreEqual(saleItem.Description, product.Description);
 
-            map.DestinationProperty = product.GetType().GetProperty("Weight");
-            map.SourceProperty = saleItem.GetType().GetProperty("ShippingWeight");
+            map = new PropertyMap(
+                destinationProperty: product.GetType().GetProperty("Weight"),
+                sourceProperty: saleItem.GetType().GetProperty("ShippingWeight"));
             map.Map(saleItem, product);
             Assert.AreEqual(saleItem.ShippingWeight, product.Weight);
         }
@@ -85,19 +94,21 @@ namespace SimpleMapperUnitTests
         {
             SaleItem saleItem = new SaleItem { Id = 1, Description = "Test", ShippingWeight = 3.0 };
             Product product = new Product();
-            PropertyMap map = new PropertyMap();
-            map.DestinationProperty = product.GetType().GetProperty("Id");
-            map.MappingFunction = si => 4;
+            PropertyMap map = new PropertyMap(
+                destinationProperty: product.GetType().GetProperty("Id"),
+                mappingFunction: si => 4);
             map.Map(saleItem, product);
             Assert.AreEqual(4, product.Id);
 
-            map.DestinationProperty = product.GetType().GetProperty("Description");
-            map.MappingFunction = si => "Description from mapping function";
+            map = new PropertyMap(
+                destinationProperty: product.GetType().GetProperty("Description"),
+                mappingFunction: si => "Description from mapping function");
             map.Map(saleItem, product);
             Assert.AreEqual("Description from mapping function", product.Description);
 
-            map.DestinationProperty = product.GetType().GetProperty("Weight");
-            map.MappingFunction = si => 12;
+            map = new PropertyMap(
+                destinationProperty: product.GetType().GetProperty("Weight"),
+                mappingFunction: si => 12);
             map.Map(saleItem, product);
             Assert.AreEqual(12, product.Weight);
         }
@@ -107,22 +118,24 @@ namespace SimpleMapperUnitTests
         {
             SaleItem saleItem = new SaleItem { Id = 1, Description = "Test", ShippingWeight = 3.0 };
             Product product = new Product();
-            PropertyMap map = new PropertyMap();
-            map.DestinationProperty = product.GetType().GetProperty("Id");
-            map.SourceProperty = saleItem.GetType().GetProperty("Id");
-            map.MappingFunction = si => 4;
+            PropertyMap map = new PropertyMap(
+                destinationProperty: product.GetType().GetProperty("Id"),
+                sourceProperty: saleItem.GetType().GetProperty("Id"),
+                mappingFunction: si => 4);
             map.Map(saleItem, product);
             Assert.AreEqual(4, product.Id);
 
-            map.DestinationProperty = product.GetType().GetProperty("Description");
-            map.SourceProperty = saleItem.GetType().GetProperty("Description");
-            map.MappingFunction = si => "Description from mapping function";
+            map = new PropertyMap(
+                destinationProperty: product.GetType().GetProperty("Description"),
+                sourceProperty: saleItem.GetType().GetProperty("Description"),
+                mappingFunction: si => "Description from mapping function");
             map.Map(saleItem, product);
             Assert.AreEqual("Description from mapping function", product.Description);
 
-            map.DestinationProperty = product.GetType().GetProperty("Weight");
-            map.SourceProperty = saleItem.GetType().GetProperty("ShippingWeight");
-            map.MappingFunction = si => 12;
+            map = new PropertyMap(
+                destinationProperty: product.GetType().GetProperty("Weight"),
+                sourceProperty: saleItem.GetType().GetProperty("ShippingWeight"),
+                mappingFunction: si => 12);
             map.Map(saleItem, product);
             Assert.AreEqual(12, product.Weight);
         }

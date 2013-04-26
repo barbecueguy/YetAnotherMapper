@@ -5,9 +5,28 @@ namespace Yams
 {
     public class PropertyMap
     {
-        public PropertyInfo SourceProperty;
-        public PropertyInfo DestinationProperty;
-        public Func<object, object> MappingFunction;
+        public PropertyInfo SourceProperty { get; protected set; }
+        public PropertyInfo DestinationProperty { get; protected set; }
+        public Func<object, object> MappingFunction { get; protected set; }
+
+        public PropertyMap(PropertyInfo sourceProperty, PropertyInfo destinationProperty)
+        {
+            this.SourceProperty = sourceProperty;
+            this.DestinationProperty = destinationProperty;
+        }
+
+        public PropertyMap(PropertyInfo sourceProperty, PropertyInfo destinationProperty, Func<object, object> mappingFunction)
+        {
+            this.SourceProperty = sourceProperty;
+            this.DestinationProperty = destinationProperty;
+            this.MappingFunction = mappingFunction;
+        }
+
+        public PropertyMap(PropertyInfo destinationProperty, Func<object, object> mappingFunction)
+        {
+            this.DestinationProperty = destinationProperty;
+            this.MappingFunction = mappingFunction;
+        }
 
         public void Map(object source, object destination)
         {
@@ -20,13 +39,13 @@ namespace Yams
 
             if (MappingFunction == null && SourceProperty == null)
             {
-                var defaultValue = GetDefaultValue(DestinationProperty.PropertyType);
-                DestinationProperty.SetValue(destination, defaultValue, null);
-                return;
+                var type = DestinationProperty.PropertyType;
+                MappingFunction = src => GetDefaultValue(type);
             }
-
-            if (MappingFunction == null)
+            else if (MappingFunction == null)
+            {
                 MappingFunction = src => SourceProperty.GetValue(src, null);
+            }
 
             DestinationProperty.SetValue(destination, MappingFunction(source), null);
         }

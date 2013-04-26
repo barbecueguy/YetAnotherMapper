@@ -13,7 +13,7 @@ namespace SimpleMapperUnitTests
         public void TypeMap_Map_MapsCommonlyNamedProperties_GivenTwoDifferentTypes()
         {
             Product source = TestData.Product;
-            var map = new TypeMap { SourceType = typeof(Product), DestinationType = typeof(SaleItem) };
+            var map = new TypeMap<Product, SaleItem>();
             var result = map.Map(source);
 
             Assert.IsInstanceOfType(result, typeof(SaleItem));
@@ -27,17 +27,9 @@ namespace SimpleMapperUnitTests
         public void TypeMap_Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndAMappingFunction()
         {
             Product source = TestData.Product;
-            TypeMap map = new TypeMap { SourceType = typeof(Product), DestinationType = typeof(SaleItem) };
-            map.Add(new PropertyMap
-            {
-                DestinationProperty = map.DestinationType.GetProperty("Quantity"),
-                MappingFunction = o => 1
-            });
-            map.Add(new PropertyMap
-            {
-                DestinationProperty = map.DestinationType.GetProperty("ShippingWeight"),
-                MappingFunction = o => ((Product)o).Weight
-            });
+            var map = new TypeMap<Product, SaleItem>();
+            map.Add(new PropertyMap(map.DestinationType.GetProperty("Quantity"), o => 1));
+            map.Add(new PropertyMap(map.DestinationType.GetProperty("ShippingWeight"), o => ((Product)o).Weight));
 
             var result = map.Map(source);
 
@@ -52,17 +44,13 @@ namespace SimpleMapperUnitTests
         public void TypeMap_Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndASourceAndDestinationProperty()
         {
             Product source = TestData.Product;
-            TypeMap map = new TypeMap { DestinationType = typeof(SaleItem), SourceType = typeof(Product) };
-            map.Add(new PropertyMap
-            {
-                DestinationProperty = map.DestinationType.GetProperty("Quantity"),
-                MappingFunction = o => 1
-            });
-            map.Add(new PropertyMap
-            {
-                DestinationProperty = map.DestinationType.GetProperty("ShippingWeight"),
-                SourceProperty = map.SourceType.GetProperty("Weight")
-            });
+            var map = new TypeMap<Product, SaleItem>();
+            map.Add(new PropertyMap(
+                destinationProperty: map.DestinationType.GetProperty("Quantity"),
+                mappingFunction: o => 1));
+            map.Add(new PropertyMap(
+                destinationProperty: map.DestinationType.GetProperty("ShippingWeight"),
+                sourceProperty: map.SourceType.GetProperty("Weight")));
 
             var result = map.Map(source);
 
@@ -76,11 +64,11 @@ namespace SimpleMapperUnitTests
         [TestMethod]
         public void GenericTypeMap_Constructor_SetsSourceAndDestinationPropertyTypesToPassedTypeMapPropertyTypes()
         {
-            TypeMap map = new TypeMap(typeof(SaleItem), typeof(Product));
-            TypeMap<SaleItem, Product> genericMap = new TypeMap<SaleItem, Product>(map);
+            var expected = new TypeMap<Product, SaleItem>();
+            var actual = new TypeMap<Product, SaleItem>(expected);
 
-            Assert.AreEqual(map.DestinationType, genericMap.DestinationType);
-            Assert.AreEqual(map.SourceType, genericMap.SourceType);
+            Assert.AreEqual(expected.DestinationType, actual.DestinationType);
+            Assert.AreEqual(expected.SourceType, actual.SourceType);
         }
 
         [TestMethod]
