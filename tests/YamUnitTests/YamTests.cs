@@ -1,20 +1,20 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Yams;
 using YamTestClasses;
 
 namespace SimpleMapperUnitTests
 {
-    [TestClass]
+    [TestFixture]
     public class YamTests
     {
-        [TestInitialize]
+        [SetUp]
         public void TestInitialize()
         {
             Yam.Clear();
         }
 
-        [TestMethod]
+        [Test]
         public void Yam_CreateMap_ReturnsTheSameObject_GivenTheSameSourceAndDestinationTypes()
         {
             var sourceType = typeof(Product);
@@ -26,7 +26,7 @@ namespace SimpleMapperUnitTests
             Assert.AreSame(expected, actual, "Expected the same reference, but found a different reference");
         }
 
-        [TestMethod]
+        [Test]
         public void Yam_CreateMapOfTSourceTDestination_ReturnsTheSameObject_GivenTheSameSourceAndDestinationTypes()
         {
             var expected = Yam.CreateMap<Product,SaleItem>();
@@ -36,26 +36,26 @@ namespace SimpleMapperUnitTests
             Assert.AreSame(expected, actual, "Expected the same reference, but found a different reference");
         }
 
-        [TestMethod]
+        [Test]
         public void Yam_Map_ReturnsTheSameMap_WhenAMapForAGivenSourceAndDestinationAlreadyExists()
         {
             var map = new TypeMap<Product, SaleItem>();
             Assert.AreSame(map, Yam.AddMap(map), "Expected the same object reference, but found another");
         }
 
-        [TestMethod]
+        [Test]
         public void Yam_MapsCommonlyNamedProperties_GivenTwoDifferentObjectTypes()
         {
             Product source = TestData.Product;
             var destination = Yam<Product, SaleItem>.Map(source);
 
-            Assert.IsInstanceOfType(destination, typeof(SaleItem));
+            Assert.IsInstanceOf<SaleItem>(destination);
             Assert.AreEqual(source.Description, destination.Description);
             Assert.AreEqual(source.Id, destination.Id);
             Assert.AreEqual(0, destination.Quantity);
         }
 
-        [TestMethod]
+        [Test]
         public void Yam_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndMappingFunction()
         {
             Product source = TestData.Product;
@@ -66,14 +66,14 @@ namespace SimpleMapperUnitTests
                 .For(dest => dest.Quantity, src => 1)
                 .Map(source);
 
-            Assert.IsInstanceOfType(result, typeof(SaleItem));
+            Assert.IsInstanceOf<SaleItem>(result);
             Assert.AreEqual(result.Description, source.Description);
             Assert.AreEqual(result.Id, source.Id);
             Assert.AreEqual(result.ShippingWeight, source.Weight);
             Assert.AreEqual(result.Quantity, 1);
         }
 
-        [TestMethod]
+        [Test]
         public void YamOfTSource_MapOfTDestination_MapsAsExpected()
         {
             Product source = TestData.Product;
@@ -85,14 +85,14 @@ namespace SimpleMapperUnitTests
 
             var result = Yam<Product>.Map<SaleItem>().Map(source);
 
-            Assert.IsInstanceOfType(result, typeof(SaleItem));
+            Assert.IsInstanceOf<SaleItem>(result);
             Assert.AreEqual(result.Description, source.Description);
             Assert.AreEqual(result.Id, source.Id);
             Assert.AreEqual(result.ShippingWeight, source.Weight);
             Assert.AreEqual(result.Quantity, 1);
         }
 
-        [TestMethod]
+        [Test]
         public void Yam_MapOfTDestination_MapsAsExpected()
         {
             Product source = TestData.Product;
@@ -104,7 +104,7 @@ namespace SimpleMapperUnitTests
 
             var result = Yam.Map<SaleItem>(source);
 
-            Assert.IsInstanceOfType(result, typeof(SaleItem));
+            Assert.IsInstanceOf<SaleItem>(result);
             Assert.AreEqual(result.Description, source.Description);
             Assert.AreEqual(result.Id, source.Id);
             Assert.AreEqual(result.ShippingWeight, source.Weight);

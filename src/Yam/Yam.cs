@@ -21,7 +21,7 @@ namespace Yams
         }
 
         public static ITypeMap CreateMap<TSource, TDestination>()
-        {            
+        {
             var sourceType = typeof(TSource);
             var destinationType = typeof(TDestination);
             var map = maps.FirstOrDefault(mp => mp.SourceType == sourceType && mp.DestinationType == destinationType);
@@ -37,7 +37,7 @@ namespace Yams
         public static ITypeMap CreateMap<TSource, TDestination>(TSource source, TDestination destination)
         {
             return CreateMap<TSource, TDestination>();
-        }        
+        }
 
         public static ITypeMap GetMap<TSource, TDestination>()
         {
@@ -68,7 +68,7 @@ namespace Yams
             var map = GetMap(sourceType, destinationType);
             if (map == null)
             {
-                map = CreateMap(o, default(TDestination));
+                map = CreateMap(sourceType, destinationType);
                 map = AddMap(map);
             }
 
@@ -80,7 +80,10 @@ namespace Yams
     {
         public static TypeMap<TSource, TDestination> Map<TDestination>()
         {
-            return new TypeMap<TSource, TDestination>();
+            var map = Yam<TSource, TDestination>.GetMap();
+            if (map == null)
+                Yam<TSource, TDestination>.CreateMap();
+            return map;
         }
 
         public static TDestination Map<TDestination>(TSource source)
@@ -99,8 +102,7 @@ namespace Yams
 
         public static TypeMap<TSource, TDestination> CreateMap()
         {
-            var map = new TypeMap<TSource, TDestination>();
-            map = (TypeMap<TSource, TDestination>)Yam.AddMap(map);
+            var map = (TypeMap<TSource, TDestination>)Yam.CreateMap<TSource, TDestination>();
             return map;
         }
 
@@ -134,8 +136,6 @@ namespace Yams
                 newMap = CreateMap(existingMap);
             }
 
-            newMap = AddMap(newMap);
-
             var propertyExpression = (MemberExpression)destination.Body;
             var destinationProperty = newMap.DestinationType.GetProperty(propertyExpression.Member.Name);
 
@@ -152,7 +152,10 @@ namespace Yams
         }
 
         public static TDestination Map(TSource source)
-        {            
+        {
+            var map = Yam<TSource, TDestination>.GetMap();
+            if (map == null)
+                map = Yam<TSource, TDestination>.CreateMap();
             return Yam.Map<TDestination>(source);
         }
     }

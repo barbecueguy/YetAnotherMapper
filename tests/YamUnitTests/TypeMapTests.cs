@@ -1,29 +1,29 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Yams;
+using NUnit.Framework;
 using YamTestClasses;
+using Yams;
 
 namespace SimpleMapperUnitTests
 {
-    [TestClass]
+    [TestFixture]
     public class TypeMapTests
     {
-        [TestMethod]
+        [Test]
         public void TypeMap_Map_MapsCommonlyNamedProperties_GivenTwoDifferentTypes()
         {
             Product source = TestData.Product;
             var map = new TypeMap<Product, SaleItem>();
             var result = map.Map(source);
 
-            Assert.IsInstanceOfType(result, typeof(SaleItem));
+            Assert.IsInstanceOf<SaleItem>(result);
             var destination = result as SaleItem;
             Assert.AreEqual(destination.Description, source.Description);
             Assert.AreEqual(destination.Id, source.Id);
             Assert.AreEqual(destination.Quantity, 0);
         }
 
-        [TestMethod]
+        [Test]
         public void TypeMap_Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndAMappingFunction()
         {
             Product source = TestData.Product;
@@ -33,14 +33,14 @@ namespace SimpleMapperUnitTests
 
             var result = map.Map(source);
 
-            Assert.IsInstanceOfType(result, typeof(SaleItem));
+            Assert.IsInstanceOf<SaleItem>(result);
             var destination = result as SaleItem;
             Assert.AreEqual(source.Description, destination.Description, "Expected descriptions to be equal, but found {0}source: {1}{0} and destination: {1}", Environment.NewLine, source.Description, destination.Description);
             Assert.AreEqual(destination.Id, source.Id);
             Assert.AreEqual(destination.Quantity, 1);
         }
 
-        [TestMethod]
+        [Test]
         public void TypeMap_Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndASourceAndDestinationProperty()
         {
             Product source = TestData.Product;
@@ -54,14 +54,14 @@ namespace SimpleMapperUnitTests
 
             var result = map.Map(source);
 
-            Assert.IsInstanceOfType(result, typeof(SaleItem));
+            Assert.IsInstanceOf<SaleItem>(result);
             var destination = result as SaleItem;
             Assert.AreEqual(destination.Description, source.Description);
             Assert.AreEqual(destination.Id, source.Id);
             Assert.AreEqual(destination.Quantity, 1);
         }
 
-        [TestMethod]
+        [Test]
         public void GenericTypeMap_Constructor_SetsSourceAndDestinationPropertyTypesToPassedTypeMapPropertyTypes()
         {
             var expected = new TypeMap<Product, SaleItem>();
@@ -71,19 +71,19 @@ namespace SimpleMapperUnitTests
             Assert.AreEqual(expected.SourceType, actual.SourceType);
         }
 
-        [TestMethod]
+        [Test]
         public void GenericTypeMap_Map_MapsCommonlyNamedProperties_GivenTwoDifferentTypes()
         {
             Product source = TestData.Product;
             var result = new TypeMap<Product, SaleItem>().Map(source);
 
-            Assert.IsInstanceOfType(result, typeof(SaleItem));
+            Assert.IsInstanceOf<SaleItem>(result);
             Assert.AreEqual(result.Description, source.Description);
             Assert.AreEqual(result.Id, source.Id);
             Assert.AreEqual(result.Quantity, 0);
         }
 
-        [TestMethod]
+        [Test]
         public void GenericTypeMap_Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndMappingFunction()
         {
             Product source = TestData.Product;
@@ -94,13 +94,13 @@ namespace SimpleMapperUnitTests
                 .For(dest => dest.Quantity, src => 1)
                 .Map(source);
 
-            Assert.IsInstanceOfType(result, typeof(SaleItem));
+            Assert.IsInstanceOf<SaleItem>(result);
             Assert.AreEqual(result.Description, source.Description);
             Assert.AreEqual(result.Id, source.Id);
             Assert.AreEqual(result.Quantity, 1);
         }
 
-        [TestMethod]
+        [Test]
         public void GenericTypeMap_Map_MapsAllProperties_GivenTwoObjectsOfDifferentTypesAndASourcePropertyAndNonLambdaMappingFunction()
         {
             TypeMap<Product, SaleItem> map = new TypeMap<Product, SaleItem>()
@@ -111,13 +111,13 @@ namespace SimpleMapperUnitTests
             var expectedDescription = TestData.TestStringMappingFunction(source);
             var destination = map.Map(source);
 
-            Assert.IsInstanceOfType(destination, typeof(SaleItem));
+            Assert.IsInstanceOf<SaleItem>(destination);
             Assert.AreEqual(expectedDescription, destination.Description);
             Assert.AreEqual(source.Id, destination.Id);
             Assert.AreEqual(0, destination.Quantity);
         }
 
-        [TestMethod]
+        [Test]
         public void GenericTypeMap_Map_MapsCorrectly_GivenANewPropertyMapForAnExistingMap()
         {
             TypeMap<Product, SaleItem> map = new TypeMap<Product, SaleItem>()
@@ -129,7 +129,7 @@ namespace SimpleMapperUnitTests
 
             var destination = map.Map(source);
 
-            Assert.IsInstanceOfType(destination, typeof(SaleItem));
+            Assert.IsInstanceOf<SaleItem>(destination);
             Assert.AreEqual(source.Description, destination.Description);
             Assert.AreEqual(source.Id, destination.Id);
             Assert.AreEqual(source.Weight, destination.ShippingWeight);
@@ -142,7 +142,7 @@ namespace SimpleMapperUnitTests
 
             destination = map.Map(source);
 
-            Assert.IsInstanceOfType(destination, typeof(SaleItem));
+            Assert.IsInstanceOf<SaleItem>(destination);
             Assert.AreEqual("TestDescription", destination.Description);
             Assert.AreEqual(69, destination.Id);
             Assert.AreEqual(3, destination.ShippingWeight);

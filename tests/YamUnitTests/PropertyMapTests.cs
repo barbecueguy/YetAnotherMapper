@@ -1,14 +1,14 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Yams;
+using NUnit.Framework;
 using YamTestClasses;
+using Yams;
 
 namespace SimpleMapperUnitTests
 {
-    [TestClass]
+    [TestFixture]
     public class PropertyMapTests
     {
-        [TestMethod]
+        [Test]
         [ExpectedException(typeof(InvalidOperationException))]
         public void PropertyMap_Map_Throws_WhenDestinationPropertyIsNull()
         {
@@ -18,7 +18,7 @@ namespace SimpleMapperUnitTests
             map.Map(product, saleItem);
         }
 
-        [TestMethod]
+        [Test]
         [ExpectedException(typeof(ArgumentNullException))]
         public void PropertyMap_Map_Throws_WhenSourceObjectIsNull()
         {
@@ -28,7 +28,7 @@ namespace SimpleMapperUnitTests
             map.Map(product, saleItem);
         }
 
-        [TestMethod]
+        [Test]
         [ExpectedException(typeof(ArgumentNullException))]
         public void PropertyMap_Map_Throws_WhenDestinationObjectIsNull()
         {
@@ -38,7 +38,7 @@ namespace SimpleMapperUnitTests
             map.Map(product, saleItem);
         }
 
-        [TestMethod]
+        [Test]
         public void PropertyMap_Map_SetsDestinationPropertyToItsDefaultValue_WhenSourcePropertyIsNullAndMappingFunctionIsNull()
         {
             SaleItem saleItem = new SaleItem();
@@ -64,7 +64,7 @@ namespace SimpleMapperUnitTests
             Assert.AreEqual(0, product.Weight);
         }
 
-        [TestMethod]
+        [Test]
         public void PropertyMap_Map_SetsDestinationPropertyValueToSourcePropertyValue_WhenTheSourcePropertyIsProvidedAndTheMapFunctionIsNull()
         {
             SaleItem saleItem = new SaleItem { Id = 1, Description = "Test", ShippingWeight = 3.0 };
@@ -89,7 +89,7 @@ namespace SimpleMapperUnitTests
             Assert.AreEqual(saleItem.ShippingWeight, product.Weight);
         }
 
-        [TestMethod]
+        [Test]
         public void PropertyMap_Map_SetsDestinationPropertyValueToMapFunctionResult_WhenTheSourcePropertyIsNullAndTheMapFunctionIsProvided()
         {
             SaleItem saleItem = new SaleItem { Id = 1, Description = "Test", ShippingWeight = 3.0 };
@@ -113,7 +113,7 @@ namespace SimpleMapperUnitTests
             Assert.AreEqual(12, product.Weight);
         }
 
-        [TestMethod]
+        [Test]
         public void PropertyMap_Map_SetsDestinationPropertyValueToMapFunctionResult_WhenTheSourcePropertyIsProvidedAndTheMapFunctionIsProvided()
         {
             SaleItem saleItem = new SaleItem { Id = 1, Description = "Test", ShippingWeight = 3.0 };
