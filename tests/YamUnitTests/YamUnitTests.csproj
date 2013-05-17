@@ -57,9 +57,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="TypeMapTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PropertyMapTests.cs" />
     <Compile Include="YamTests.cs" />
   </ItemGroup>
   <ItemGroup>

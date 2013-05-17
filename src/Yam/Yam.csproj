@@ -41,7 +41,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ITypeMap.cs" />
     <Compile Include="TypeMap.cs" />
     <Compile Include="PropertyMap.cs" />
     <Compile Include="Yam.cs" />

@@ -2,161 +2,161 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Yams
 {
     public static class Yam
     {
-        private static readonly List<ITypeMap> maps = new List<ITypeMap>();
-
-        public static ITypeMap AddMap(ITypeMap map)
-        {
-            var it = maps.FirstOrDefault(mp => mp.SourceType == map.SourceType && mp.DestinationType == map.DestinationType);
-            if (ReferenceEquals(it, map))
-                return map;
-
-            maps.Remove(it);
-            maps.Add(map);
-            return map;
-        }
-
-        public static ITypeMap CreateMap<TSource, TDestination>()
-        {
-            var sourceType = typeof(TSource);
-            var destinationType = typeof(TDestination);
-            var map = maps.FirstOrDefault(mp => mp.SourceType == sourceType && mp.DestinationType == destinationType);
-            if (map == null)
-            {
-                map = new TypeMap<TSource, TDestination>();
-                maps.Add(map);
-            }
-
-            return map;
-        }
-
-        public static ITypeMap CreateMap<TSource, TDestination>(TSource source, TDestination destination)
+        public static TypeMap<TSource, TDestination> CreateMap<TSource, TDestination>(TSource source, TDestination destination)
         {
             return CreateMap<TSource, TDestination>();
         }
 
-        public static ITypeMap GetMap<TSource, TDestination>()
+        public static TypeMap<TSource, TDestination> CreateMap<TSource, TDestination>()
         {
-            return GetMap(typeof(TSource), typeof(TDestination));
-        }
-
-        public static ITypeMap GetMap(Type sourceType, Type destinationType)
-        {
-            var map = maps.FirstOrDefault(mp => mp.SourceType == sourceType && mp.DestinationType == destinationType);
+            var map = GetMap<TSource, TDestination>();
+            if (map == null)
+                map = new TypeMap<TSource, TDestination>();
+            Maps.Add(map);
             return map;
         }
 
-        public static ITypeMap RemoveMap(ITypeMap map)
+        public static TypeMap<TSource, TDestination> GetMap<TSource, TDestination>()
         {
-            maps.Remove(map);
+            var destinationType = typeof(TDestination);
+            var sourceType = typeof(TSource);
+            var map = (TypeMap<TSource, TDestination>)GetMap(sourceType, destinationType);
             return map;
+        }
+
+        public static TypeMap<TSource, TDestination> For<TSource, TDestination, TProperty>(
+            Expression<Func<TDestination, TProperty>> destinationPropertyExpression,
+            Expression<Func<TSource, TProperty>> mappingExpression)
+        {
+            var map = Yam.GetMap<TSource, TDestination>();
+            if (map == null)
+                Yam.CreateMap<TSource, TDestination>();
+
+            map = Yam.AddPropertyMap<TSource, TDestination, TProperty>(
+                destinationPropertyExpression,
+                mappingExpression);
+
+            return map;
+        }
+
+        public static TDestination Map<TSource, TDestination>(TSource source)
+        {
+            var map = GetMap<TSource, TDestination>();
+            if (map == null)
+                map = CreateMap<TSource, TDestination>();
+
+            var destination = Activator.CreateInstance<TDestination>();
+            foreach (var property in map.PropertyMaps)
+            {
+                MapProperty(property, source, destination);
+            }
+
+            return destination;
+        }
+
+        public static TDestination Map<TDestination>(object source)
+        {
+            var sourceType = source.GetType();
+            var destinationType = typeof(TDestination);
+            var map = GetMap(sourceType, destinationType);
+            if (map == null)
+                map = CreateMap(source, default(TDestination));
+
+            var destination = Activator.CreateInstance<TDestination>();
+            var propertyMaps = (IEnumerable<PropertyMap>)map.GetType().GetProperty("PropertyMaps").GetValue(map, null);
+            foreach (var property in propertyMaps)
+            {
+                MapProperty(property, source, destination);
+            }
+
+            return destination;
         }
 
         public static void Clear()
         {
-            maps.Clear();
+            Maps.Clear();
         }
 
-        public static TDestination Map<TDestination>(object o)
+        #region private
+        private static TypeMap<TSource, TDestination> AddPropertyMap<TSource, TDestination, TProperty>(
+            Expression<Func<TDestination, TProperty>> destinationPropertyExpression,
+            Expression<Func<TSource, TProperty>> mappingExpression)
         {
-            var sourceType = o.GetType();
-            var destinationType = typeof(TDestination);
-            var map = GetMap(sourceType, destinationType);
+            var map = GetMap<TSource, TDestination>();
             if (map == null)
+                throw new ArgumentOutOfRangeException(
+                    "destinationPropertyExpression",
+                    string.Format("No mapping found from {0} to {1}", typeof(TSource), typeof(TDestination)));
+
+            var destinationPropertyName = ((MemberExpression)destinationPropertyExpression.Body).Member.Name;
+            var sourcePropertyExpression = mappingExpression as MemberExpression;
+            var sourcePropertyName = sourcePropertyExpression == null ? null : sourcePropertyExpression.Member.Name;
+            var sourcePropertyInfo = sourcePropertyName == null ? null : typeof(TSource).GetProperty(sourcePropertyName);
+            var destinationPropertyInfo = typeof(TDestination).GetProperty(destinationPropertyName);
+            var propertyMap = new PropertyMap(
+                sourcePropertyInfo,
+                destinationPropertyInfo,
+                src => mappingExpression.Compile()((TSource)src));
+            map.Add(propertyMap);
+            return map;
+        }        
+
+        private static object GetMap(Type sourceType, Type destinationType)
+        {
+            var map = Maps.FirstOrDefault(mp =>
             {
-                map = CreateMap(sourceType, destinationType);
-                map = AddMap(map);
-            }
+                var type = mp.GetType();
+                var mapSourceType = type.GetProperty("SourceType").GetValue(mp, null);
+                var mapDestinationType = type.GetProperty("DestinationType").GetValue(mp, null);
+                return mapSourceType == sourceType && mapDestinationType == destinationType;
+            });
 
-            return (TDestination)map.Map(o);
-        }
-    }
-
-    public static class Yam<TSource>
-    {
-        public static TypeMap<TSource, TDestination> Map<TDestination>()
-        {
-            var map = Yam<TSource, TDestination>.GetMap();
-            if (map == null)
-                Yam<TSource, TDestination>.CreateMap();
             return map;
         }
 
-        public static TDestination Map<TDestination>(TSource source)
+
+        private static void MapProperty(PropertyMap property, object source, object destination)
         {
-            return Yam<TSource, TDestination>.Map(source);
+            if (property.DestinationProperty == null)
+                throw new ArgumentOutOfRangeException("property");
+            if (property.MappingFunction == null)
+                property.DestinationProperty.SetValue(destination, property.SourceProperty.GetValue(source, null), null);
+            else
+                property.DestinationProperty.SetValue(destination, property.MappingFunction(source), null);
         }
+
+        private static readonly List<object> Maps = new List<object>();
+
+        #endregion
     }
 
     public static class Yam<TSource, TDestination>
     {
-        public static TypeMap<TSource, TDestination> AddMap(TypeMap<TSource, TDestination> map)
-        {
-            map = (TypeMap<TSource, TDestination>)Yam.AddMap(map);
-            return map;
-        }
-
-        public static TypeMap<TSource, TDestination> CreateMap()
-        {
-            var map = (TypeMap<TSource, TDestination>)Yam.CreateMap<TSource, TDestination>();
-            return map;
-        }
-
-        public static TypeMap<TSource, TDestination> CreateMap(ITypeMap map)
-        {
-            if (map == null)
-                throw new ArgumentNullException("map");
-
-            TypeMap<TSource, TDestination> result = null;
-            if (map is TypeMap<TSource, TDestination> == false)
-            {
-                result = new TypeMap<TSource, TDestination>(map);
-            }
-
-            result = (TypeMap<TSource, TDestination>)Yam.AddMap(result);
-            return result;
-        }
-
         public static TypeMap<TSource, TDestination> For<TProperty>(
-            Expression<Func<TDestination, TProperty>> destination,
-            Expression<Func<TSource, TProperty>> mappingFunction)
+            Expression<Func<TDestination, TProperty>> destinationPropertyExpression,
+            Expression<Func<TSource, TProperty>> mappingExpression)
         {
-            TypeMap<TSource, TDestination> newMap = null;
-            var existingMap = Yam.GetMap<TSource, TDestination>();
-            if (existingMap == null)
-            {
-                newMap = CreateMap();
-            }
-            else if (existingMap is TypeMap<TSource, TDestination> == false)
-            {
-                newMap = CreateMap(existingMap);
-            }
+            var map = Yam.GetMap<TSource, TDestination>();
+            if (map == null)
+                Yam.CreateMap<TSource, TDestination>();
 
-            var propertyExpression = (MemberExpression)destination.Body;
-            var destinationProperty = newMap.DestinationType.GetProperty(propertyExpression.Member.Name);
+            map = Yam.For<TSource, TDestination, TProperty>(
+                destinationPropertyExpression,
+                mappingExpression);
 
-            var propertyMap = new PropertyMap(destinationProperty, o => mappingFunction.Compile()((TSource)o));
-            newMap.Add(propertyMap);
-
-            return newMap;
-        }
-
-        public static TypeMap<TSource, TDestination> GetMap()
-        {
-            var map = Yam.GetMap<TSource, TDestination>() as TypeMap<TSource, TDestination>;
             return map;
         }
 
         public static TDestination Map(TSource source)
         {
-            var map = Yam<TSource, TDestination>.GetMap();
-            if (map == null)
-                map = Yam<TSource, TDestination>.CreateMap();
-            return Yam.Map<TDestination>(source);
+            var result = Yam.Map<TSource, TDestination>(source);
+            return result;
         }
     }
 }
