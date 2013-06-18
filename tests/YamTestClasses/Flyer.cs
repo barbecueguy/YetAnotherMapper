@@ -5,8 +5,8 @@ using System.Text;
 
 namespace YamTestClasses
 {
-    public class Order
+    public class Flyer
     {
-        public List<SaleItem> Items { get; set; }
+        public Person Addressee { get; set; }
     }
 }

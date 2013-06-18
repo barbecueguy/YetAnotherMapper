@@ -5,8 +5,10 @@ using System.Text;
 
 namespace YamTestClasses
 {
-    public class Order
+    public class Invoice
     {
-        public List<SaleItem> Items { get; set; }
+        public Customer Customer { get; set; }
+
+        public List<Product> Items { get; set; }
     }
 }
