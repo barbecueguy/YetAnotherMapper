@@ -5,10 +5,10 @@ using System.Text;
 
 namespace YamTestClasses
 {
-    public class Customer
+    public class Employee
     {
         public string LastName { get; set; }
         public string FirstName { get; set; }
-        public double Age { get; set; }
+        public decimal Age { get; set; }
     }
 }
