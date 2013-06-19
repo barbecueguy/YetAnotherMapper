@@ -17,7 +17,21 @@ namespace SimpleMapperUnitTests
         }
 
         [Test]
-        public void CreateMap_CreatesTheMap_And_AddsTheMapToTheYam()
+        public void CreateMap_CreatesTheMapWithDefaultPropertyMapsForCommonlyNamedProperties()
+        {
+            var commonProperties = from sourceProperty in typeof(Product).GetProperties().Select(p => p.Name)
+                                   join destinationProperty in typeof(SaleItem).GetProperties().Select(p => p.Name)
+                                   on sourceProperty equals destinationProperty
+                                   select sourceProperty;
+
+            TypeMap expected = Yam.CreateMap(typeof(Product), typeof(SaleItem));
+
+            Assert.IsTrue(commonProperties.Count() > 0);
+            Assert.AreEqual(commonProperties.Count(), expected.PropertyMaps.Count);
+        }
+
+        [Test]
+        public void CreateMap_AddsTheMapToTheYam()
         {
             TypeMap expected = Yam.CreateMap(typeof(Product), typeof(SaleItem));
 
@@ -27,17 +41,7 @@ namespace SimpleMapperUnitTests
         }
 
         [Test]
-        public void CreateMap_CreatesTheMapAndAddsTheDefaultPropertyMapsForCommonlyNamedProperties()
-        {
-            TypeMap expected = Yam.CreateMap(typeof(Product), typeof(SaleItem));
-
-            TypeMap actual = Yam.GetMap(typeof(Product), typeof(SaleItem));
-
-            Assert.IsTrue(actual.PropertyMaps.Count > 0);
-        }
-
-        [Test]
-        public void Map_MapsPropertiesWithTheSameNames()
+        public void Map_TestMappingPropertiesWithTheSameDataTypes_AndTheSameNames()
         {
             Product product = new Product { Description = "Test Product", Id = 1, ShippingWeight = 3.5 };
             Yam.CreateMap(typeof(Product), typeof(SaleItem));
@@ -50,7 +54,7 @@ namespace SimpleMapperUnitTests
         }
 
         [Test]
-        public void Map_MapsPropertiesWithDifferentNamesGivenBothPropertyNames()
+        public void Map_TestMappingPropertiesWithTheSameDataTypes_GivenThePropertyNames()
         {
             Product product = new Product { Description = "Test Product", Id = 1, ShippingWeight = 3.5 };
             Yam.CreateMap(typeof(Product), typeof(SaleItem));
@@ -68,37 +72,25 @@ namespace SimpleMapperUnitTests
         }
 
         [Test]
-        public void Map_MapsPropertiesWithDifferentNamesGivenADestinationPropertyNameAndAMappingFunction()
+        public void Map_TestMappingProperties_GivenAMappingFunction()
         {
             Product product = new Product { Description = "Test Product", Id = 1, ShippingWeight = 3.5 };
             Yam.CreateMap(typeof(Product), typeof(SaleItem));
             Yam.AddPropertyMap(
                 typeof(Product),
                 typeof(SaleItem),
-                p => ((Product)p).ShippingWeight,
+                p => 42,
                 "Weight");
 
             SaleItem saleItem = (SaleItem)Yam.Map(product, typeof(SaleItem));
 
             Assert.AreEqual(product.Description, saleItem.Description);
             Assert.AreEqual(product.Id, saleItem.Id);
-            Assert.AreEqual(product.ShippingWeight, saleItem.Weight);
+            Assert.AreEqual(42, saleItem.Weight);
         }
 
         [Test]
-        public void Map_MapsPropertiesWithTheSameNameButDifferentPropertyTypesGivenAMappingFunction()
-        {
-            Person object1 = new Person { Age = 21 };
-            Yam.CreateMap(typeof(Person), typeof(Employee));
-            Yam.AddPropertyMap(typeof(Person), typeof(Employee), o => (decimal)((Person)o).Age, "Age");
-
-            Employee object2 = (Employee)Yam.Map(object1, typeof(Employee));
-
-            Assert.AreEqual(object1.Age, object2.Age);
-        }
-
-        [Test]
-        public void Map_MapsPropertiesWithTheSameNameButDifferentPropertyTypesWhenBothPropertiesAreClrTypes()
+        public void Map_TestMappingPropertiesWithDifferentClrDataTypes()
         {
             Person person = new Person { Age = 21 };
             Yam.CreateMap(typeof(Person), typeof(Employee));
@@ -118,7 +110,7 @@ namespace SimpleMapperUnitTests
         }
 
         [Test]
-        public void Map_MapsPropertiesWithTheSameNameButDifferentPropertyTypesWhenAMappingAlreadyExistsForThePropertyTypes()
+        public void Map_TestMappingPropertiesWithDifferentDataTypes_WhenAMappingForThoseDataTypesExists()
         {
             Flyer flyer = new Flyer { Addressee = new Person { Age = 21, FirstName = "John", LastName = "Smith" } };
 
@@ -134,7 +126,7 @@ namespace SimpleMapperUnitTests
         }
 
         [Test]
-        public void Map_MapsListsOfObjectsWhenAMappingForTheObjectsExists()
+        public void Map_TestMappingListsDifferentDataTypes_WhenAMappingForThoseDataTypesExists()
         {
             Product product1 = new Product { Description = "Product 1", Id = 1, ShippingWeight = 3.5 };
             Product product2 = new Product { Description = "Product 2", Id = 2, ShippingWeight = 4.7 };
@@ -151,7 +143,35 @@ namespace SimpleMapperUnitTests
         }
 
         [Test]
-        public void Map_MapsCommonlyNamePropertiesThatAreListsOfDifferentTypesWhenAMappingForTheTypesExist()
+        public void Map_TestMappingPropertiesThatAreGenericLists_WhenTheGenericParameterTypesAreTheSame()
+        {
+            var expected = new Object1 { Name = "Object1", Scores = new List<int> { 1, 3, 5 } };
+
+            Yam.CreateMap(typeof(Object1), typeof(Object2));
+
+            var actual = (Object2)Yam.Map(expected, typeof(Object2));
+
+            Assert.AreEqual(expected.Name, actual.Name);
+            foreach(var item in actual.Scores)
+                Assert.IsTrue(expected.Scores.Contains(item));
+        }
+
+        [Test]
+        public void Map_TestMappingPropertiesThatAreGenericLists_WhenTheGenericParameterTypesAreDifferentClrDataTypes()
+        {
+            var expected = new Object1 { Name = "Object1", Scores = new List<int> { 1, 3, 5 } };
+
+            Yam.CreateMap(typeof(Object1), typeof(Object3));
+
+            var actual = (Object3)Yam.Map(expected, typeof(Object3));
+
+            Assert.AreEqual(expected.Name, actual.Name);
+            foreach (var item in actual.Scores)
+                Assert.IsTrue(expected.Scores.Contains((int)item));
+        }
+
+        [Test]
+        public void Map_TestMappingPropertiesThatAreGenericLists_WhenAMappingForThoseDataTypesExists()
         {
             SaleItem SaleItem1 = new SaleItem { Description = "SaleItem 1", Id = 1, Weight = 3.5 };
             SaleItem SaleItem2 = new SaleItem { Description = "SaleItem 2", Id = 2, Weight = 4.7 };

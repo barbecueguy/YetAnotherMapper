@@ -222,12 +222,18 @@ namespace Yams
             return false;
         }
 
+        private static bool IsConvertible(Type sourceType)
+        {
+            var interfaces = sourceType.GetInterfaces().Select(i => i.Name);
+            return interfaces.Contains("IConvertible");
+        }
+
         private static object MapLists(Type sourceType, Type destinationType, object sourceList)
         {
             var sourceParameter = sourceType.GetGenericArguments()[0];
             var destinationParameter = destinationType.GetGenericArguments()[0];
-            TypeMap map = Yam.GetMap(sourceParameter, destinationParameter);
-            if (map == null)
+            TypeMap map = Yam.GetMap(sourceParameter, destinationParameter);            
+            if (map == null && !IsConvertible(sourceParameter))
                 throw new Exception(string.Format("No map defined from {0} to {1}", sourceType, destinationType));
 
             var destinationList = Activator.CreateInstance(destinationType);
