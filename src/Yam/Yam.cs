@@ -17,8 +17,12 @@ namespace Yams
                 Yam.maps.Remove(map);
 
             map = new TypeMap(sourceType, destinationType);
+            foreach (var name in Yam.GetCommonPropertyNames(sourceType, destinationType))
+            {
+                PropertyMap propertyMap = new PropertyMap(sourceType.GetProperty(name), destinationType.GetProperty(name));
+                map.PropertyMaps.Add(propertyMap);
+            }
 
-            map.PropertyMaps.AddRange(GetDefaultPropertyMaps(sourceType, destinationType));
             maps.Add(map);
             return map;
         }
@@ -39,6 +43,17 @@ namespace Yams
                 {
                     return Yam.MapLists(sourceType, destinationType, source);
                 }
+
+                if (sourceType.Name == destinationType.Name)
+                {
+                    if (source is ICloneable)
+                        return ((ICloneable)source).Clone();
+
+                    return source; // TODO: actually create a new one at some point
+                }
+
+                if (Yam.IsConvertible(sourceType))
+                    return Convert.ChangeType(source, destinationType);
 
                 throw new Exception(string.Format("No map defined from {0} to {1}", source.GetType(), destinationType));
             }
@@ -194,6 +209,18 @@ namespace Yams
                                    join destinationProperty in destinationProperties on sourceProperty.Name equals destinationProperty.Name
                                    select new PropertyMap(sourceProperty, destinationProperty);
             return commonProperties.ToList();
+        }
+
+        private static IEnumerable<string> GetCommonPropertyNames(Type sourceType, Type destinationType)
+        {
+            var sourceProperties = sourceType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(p => p.GetIndexParameters().Any() == false)
+                .Select(p => p.Name);
+            var destinationProperties = destinationType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(p => p.GetIndexParameters().Any() == false)
+                .Select(p => p.Name);
+            var commonPropertyNames = sourceProperties.Intersect(destinationProperties);
+            return commonPropertyNames;
         }
 
         private static bool IsGenericEnumerable(Type sourceType)

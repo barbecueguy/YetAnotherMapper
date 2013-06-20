@@ -126,7 +126,21 @@ namespace SimpleMapperUnitTests
         }
 
         [Test]
-        public void Map_TestMappingListsDifferentDataTypes_WhenAMappingForThoseDataTypesExists()
+        public void Map_TestMappingGenericListsWithSameTypeParameters()
+        {
+            Product product1 = new Product { Description = "Product 1", Id = 1, ShippingWeight = 3.5 };
+            Product product2 = new Product { Description = "Product 2", Id = 2, ShippingWeight = 4.7 };
+            List<Product> products = new List<Product> { product1, product2 };
+
+            List<Product> saleItems = (List<Product>)Yam.Map(products, typeof(List<Product>));
+
+            Assert.AreEqual(products.Count, saleItems.Count);
+            foreach (var product in products)
+                Assert.IsNotNull(saleItems.FirstOrDefault(si => si.Description == product.Description && si.Id == product.Id && si.ShippingWeight == product.ShippingWeight));
+        }
+
+        [Test]
+        public void Map_TestMappingGenericListsWithDifferentTypeParameters_WhenAMappingForThoseDataTypesExists()
         {
             Product product1 = new Product { Description = "Product 1", Id = 1, ShippingWeight = 3.5 };
             Product product2 = new Product { Description = "Product 2", Id = 2, ShippingWeight = 4.7 };
@@ -152,7 +166,7 @@ namespace SimpleMapperUnitTests
             var actual = (Object2)Yam.Map(expected, typeof(Object2));
 
             Assert.AreEqual(expected.Name, actual.Name);
-            foreach(var item in actual.Scores)
+            foreach (var item in actual.Scores)
                 Assert.IsTrue(expected.Scores.Contains(item));
         }
 
@@ -187,6 +201,81 @@ namespace SimpleMapperUnitTests
             Assert.AreEqual(order.Items.Count, invoice.Items.Count);
             foreach (var item in order.Items)
                 Assert.IsNotNull(invoice.Items.FirstOrDefault(it => it.Description == item.Description && it.Id == item.Id && it.ShippingWeight == item.Weight));
+        }
+
+        [Test]
+        public void CreateMapOfTSourceTDestination_CreatesTheMapWithDefaultPropertyMapsForCommonlyNamedProperties()
+        {
+            var commonProperties = from sourceProperty in typeof(Product).GetProperties().Select(p => p.Name)
+                                   join destinationProperty in typeof(SaleItem).GetProperties().Select(p => p.Name)
+                                   on sourceProperty equals destinationProperty
+                                   select sourceProperty;
+
+            TypeMap expected = Yam.CreateMap<Product, SaleItem>();
+
+            Assert.IsTrue(commonProperties.Count() > 0);
+            Assert.AreEqual(commonProperties.Count(), expected.PropertyMaps.Count);
+        }
+
+        [Test]
+        public void CreateMapOfTSourceTDestination_AddsTheMapToTheYam()
+        {
+            TypeMap expected = Yam.CreateMap<Product, SaleItem>();
+
+            TypeMap actual = Yam.GetMap<Product, SaleItem>();
+
+            Assert.AreSame(expected, actual);
+        }
+
+        [Test]
+        public void MapOfTDestination_TestMappingListsDifferentDataTypes_WhenAMappingForThoseDataTypesExists_UsingPropertyNames()
+        {
+            Product product1 = new Product { Description = "Product 1", Id = 1, ShippingWeight = 3.5 };
+            Product product2 = new Product { Description = "Product 2", Id = 2, ShippingWeight = 4.7 };
+            List<Product> products = new List<Product> { product1, product2 };
+
+            Yam.CreateMap<Product, SaleItem>();
+            Yam.AddPropertyMap<Product, SaleItem>("ShippingWeight", "Weight");
+
+            List<SaleItem> saleItems = Yam.Map<List<SaleItem>>(products);
+
+            Assert.AreEqual(products.Count, saleItems.Count);
+            foreach (var product in products)
+                Assert.IsNotNull(saleItems.FirstOrDefault(si => si.Description == product.Description && si.Id == product.Id && si.Weight == product.ShippingWeight));
+        }
+
+        [Test]
+        public void MapOfTDestination_TestMappingListsDifferentDataTypes_WhenAMappingForThoseDataTypesExists_UsingSourcePropertyExpressionAndDestinationPropertyName()
+        {
+            Product product1 = new Product { Description = "Product 1", Id = 1, ShippingWeight = 3.5 };
+            Product product2 = new Product { Description = "Product 2", Id = 2, ShippingWeight = 4.7 };
+            List<Product> products = new List<Product> { product1, product2 };
+
+            Yam.CreateMap<Product, SaleItem>();
+            Yam.AddPropertyMap<Product, SaleItem>(p => ((Product)p).ShippingWeight, "Weight");
+
+            List<SaleItem> saleItems = Yam.Map<List<SaleItem>>(products);
+
+            Assert.AreEqual(products.Count, saleItems.Count);
+            foreach (var product in products)
+                Assert.IsNotNull(saleItems.FirstOrDefault(si => si.Description == product.Description && si.Id == product.Id && si.Weight == product.ShippingWeight));
+        }
+
+        [Test]
+        public void MapOfTDestination_TestMappingListsDifferentDataTypes_WhenAMappingForThoseDataTypesExists_UsingSourceAndDestinationPropertyExpressions()
+        {
+            Product product1 = new Product { Description = "Product 1", Id = 1, ShippingWeight = 3.5 };
+            Product product2 = new Product { Description = "Product 2", Id = 2, ShippingWeight = 4.7 };
+            List<Product> products = new List<Product> { product1, product2 };
+
+            Yam.CreateMap<Product, SaleItem>();
+            Yam.AddPropertyMap<Product, SaleItem>(p => ((Product)p).ShippingWeight, s => ((SaleItem)s).Weight);
+
+            List<SaleItem> saleItems = Yam.Map<List<SaleItem>>(products);
+
+            Assert.AreEqual(products.Count, saleItems.Count);
+            foreach (var product in products)
+                Assert.IsNotNull(saleItems.FirstOrDefault(si => si.Description == product.Description && si.Id == product.Id && si.Weight == product.ShippingWeight));
         }
     }
 }
