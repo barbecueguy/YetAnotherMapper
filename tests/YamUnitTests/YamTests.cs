@@ -228,48 +228,14 @@ namespace SimpleMapperUnitTests
         }
 
         [Test]
-        public void MapOfTDestination_TestMappingListsDifferentDataTypes_WhenAMappingForThoseDataTypesExists_UsingPropertyNames()
+        public void MapOfTDestination_TestMappingListsWithDifferentParameterTypes_WhenAMappingForThoseDataTypesExists()
         {
             Product product1 = new Product { Description = "Product 1", Id = 1, ShippingWeight = 3.5 };
             Product product2 = new Product { Description = "Product 2", Id = 2, ShippingWeight = 4.7 };
             List<Product> products = new List<Product> { product1, product2 };
 
             Yam.CreateMap<Product, SaleItem>();
-            Yam.AddPropertyMap<Product, SaleItem>("ShippingWeight", "Weight");
-
-            List<SaleItem> saleItems = Yam.Map<List<SaleItem>>(products);
-
-            Assert.AreEqual(products.Count, saleItems.Count);
-            foreach (var product in products)
-                Assert.IsNotNull(saleItems.FirstOrDefault(si => si.Description == product.Description && si.Id == product.Id && si.Weight == product.ShippingWeight));
-        }
-
-        [Test]
-        public void MapOfTDestination_TestMappingListsDifferentDataTypes_WhenAMappingForThoseDataTypesExists_UsingSourcePropertyExpressionAndDestinationPropertyName()
-        {
-            Product product1 = new Product { Description = "Product 1", Id = 1, ShippingWeight = 3.5 };
-            Product product2 = new Product { Description = "Product 2", Id = 2, ShippingWeight = 4.7 };
-            List<Product> products = new List<Product> { product1, product2 };
-
-            Yam.CreateMap<Product, SaleItem>();
-            Yam.AddPropertyMap<Product, SaleItem>(p => ((Product)p).ShippingWeight, "Weight");
-
-            List<SaleItem> saleItems = Yam.Map<List<SaleItem>>(products);
-
-            Assert.AreEqual(products.Count, saleItems.Count);
-            foreach (var product in products)
-                Assert.IsNotNull(saleItems.FirstOrDefault(si => si.Description == product.Description && si.Id == product.Id && si.Weight == product.ShippingWeight));
-        }
-
-        [Test]
-        public void MapOfTDestination_TestMappingListsDifferentDataTypes_WhenAMappingForThoseDataTypesExists_UsingSourceAndDestinationPropertyExpressions()
-        {
-            Product product1 = new Product { Description = "Product 1", Id = 1, ShippingWeight = 3.5 };
-            Product product2 = new Product { Description = "Product 2", Id = 2, ShippingWeight = 4.7 };
-            List<Product> products = new List<Product> { product1, product2 };
-
-            Yam.CreateMap<Product, SaleItem>();
-            Yam.AddPropertyMap<Product, SaleItem>(p => ((Product)p).ShippingWeight, s => ((SaleItem)s).Weight);
+            Yam.AddPropertyMap(typeof(Product), typeof(SaleItem), "ShippingWeight", "Weight");
 
             List<SaleItem> saleItems = Yam.Map<List<SaleItem>>(products);
 
