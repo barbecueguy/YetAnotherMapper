@@ -44,8 +44,8 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="TypeMap.cs" />
     <Compile Include="PropertyMap.cs" />
+    <Compile Include="TypeExtensions.cs" />
     <Compile Include="Yam.cs" />
-    <Compile Include="Yam_Old.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

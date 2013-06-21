@@ -39,7 +39,7 @@ namespace Yams
             TypeMap map = Yam.GetMap(sourceType, destinationType);
             if (map == null)
             {
-                if (Yam.IsGenericEnumerable(sourceType) && Yam.IsGenericCollection(destinationType))
+                if (sourceType.IsGenericEnumerable() && destinationType.IsGenericCollection())
                 {
                     return Yam.MapLists(sourceType, destinationType, source);
                 }
@@ -52,7 +52,7 @@ namespace Yams
                     return source; // TODO: actually create a new one at some point
                 }
 
-                if (Yam.IsConvertible(sourceType))
+                if (sourceType.IsConvertible())
                     return Convert.ChangeType(source, destinationType);
 
                 throw new Exception(string.Format("No map defined from {0} to {1}", source.GetType(), destinationType));
@@ -126,27 +126,18 @@ namespace Yams
             return Yam.GetMap(typeof(TSource), typeof(TDestination));
         }
 
-        public static TypeMap AddPropertyMap<TSource, TDestination>(string sourcePropertyName, string destinationPropertyName)
+        public static TypeMap AddPropertyMap<TSource, TDestination, TSourceProperty, TDestinationProperty>(
+            Expression<Func<TSource, TSourceProperty>> sourceExpression,
+            Expression<Func<TDestination, TDestinationProperty>> destinationExpression)
         {
-            return AddPropertyMap(typeof(TSource), typeof(TDestination), sourcePropertyName, destinationPropertyName);
-        }
-
-        public static TypeMap AddPropertyMap<TSource, TDestination>(Func<object, object> mappingFunction, string destinationPropertyName)
-        {
-            return AddPropertyMap(typeof(TSource), typeof(TDestination), mappingFunction, destinationPropertyName);
-        }
-
-        public static TypeMap AddPropertyMap<TSource, TDestination>(Expression<Func<object, object>> sourceExpression, Expression<Func<object, object>> destinationExpression)
-        {
-            return Yam.AddPropertyMap<TSource, TDestination>(sourceExpression.Compile(), ((MemberExpression)destinationExpression.Body).Member.Name);
+            var destinationPropertyName = ((MemberExpression)destinationExpression.Body).Member.Name;
+            var mappingFunction = sourceExpression.Compile();
+            return Yam.AddPropertyMap(typeof(TSource), typeof(TDestination), o => mappingFunction((TSource)o), destinationPropertyName);
         }
 
         public static TDestination Map<TDestination>(object source)
         {
             TypeMap map = Yam.GetMap(source.GetType(), typeof(TDestination));
-            if (map == null)
-                Yam.CreateMap(source.GetType(), typeof(TDestination));
-
             return (TDestination)Yam.Map(source, typeof(TDestination));
         }
         #endregion
@@ -179,7 +170,7 @@ namespace Yams
                     return;
                 }
 
-                if (Yam.IsGenericEnumerable(sourceProperty.PropertyType) && Yam.IsGenericCollection(destinationProperty.PropertyType))
+                if (sourceProperty.PropertyType.IsGenericEnumerable() && destinationProperty.PropertyType.IsGenericCollection())
                 {
                     var destinationValue = Yam.MapLists(sourceProperty.PropertyType, destinationProperty.PropertyType, sourceValue);
                     destinationProperty.SetValue(destination, destinationValue, null);
@@ -199,18 +190,6 @@ namespace Yams
             }
         }
 
-        private static List<PropertyMap> GetDefaultPropertyMaps(Type sourceType, Type destinationType)
-        {
-            var sourceProperties = sourceType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => p.GetIndexParameters().Any() == false);
-            var destinationProperties = destinationType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => p.GetIndexParameters().Any() == false);
-            var commonProperties = from sourceProperty in sourceProperties
-                                   join destinationProperty in destinationProperties on sourceProperty.Name equals destinationProperty.Name
-                                   select new PropertyMap(sourceProperty, destinationProperty);
-            return commonProperties.ToList();
-        }
-
         private static IEnumerable<string> GetCommonPropertyNames(Type sourceType, Type destinationType)
         {
             var sourceProperties = sourceType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -223,45 +202,10 @@ namespace Yams
             return commonPropertyNames;
         }
 
-        private static bool IsGenericEnumerable(Type sourceType)
-        {
-            if (sourceType.IsGenericType)
-            {
-                var definition = sourceType.GetGenericTypeDefinition();
-                var interfaces = definition.GetInterfaces().Select(i => i.Name);
-                if (interfaces.Contains(typeof(IEnumerable<>).Name))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private static bool IsGenericCollection(Type destinationType)
-        {
-            if (destinationType.IsGenericType)
-            {
-                var definition = destinationType.GetGenericTypeDefinition();
-                var interfaces = definition.GetInterfaces().Select(i => i.Name);
-                if (interfaces.Contains(typeof(ICollection<>).Name))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private static bool IsConvertible(Type sourceType)
-        {
-            var interfaces = sourceType.GetInterfaces().Select(i => i.Name);
-            return interfaces.Contains("IConvertible");
-        }
-
         private static object MapLists(Type sourceType, Type destinationType, object sourceList)
         {
             var sourceParameter = sourceType.GetGenericArguments()[0];
             var destinationParameter = destinationType.GetGenericArguments()[0];
-            TypeMap map = Yam.GetMap(sourceParameter, destinationParameter);            
-            if (map == null && !IsConvertible(sourceParameter))
-                throw new Exception(string.Format("No map defined from {0} to {1}", sourceType, destinationType));
 
             var destinationList = Activator.CreateInstance(destinationType);
             foreach (var item in ((IEnumerable)sourceList))
@@ -273,5 +217,23 @@ namespace Yams
         }
 
         private static readonly List<TypeMap> maps = new List<TypeMap>();
+    }
+
+    public static class Yam<TSource, TDestination>
+    {
+        public static TypeMap Use<TSource, TSourceProperty, TDestination, TDestinationProperty>(
+            Expression<Func<TSource, TSourceProperty>> sourceExpression,
+            Expression<Func<TDestination, TDestinationProperty>> destinationExpression)
+        {
+            return Yam.AddPropertyMap(sourceExpression, destinationExpression);
+        }
+
+        public static TDestination Map(TSource source)
+        {
+            var map = Yam.GetMap<TSource, TDestination>();
+            if (map == null)
+                map = Yam.CreateMap<TSource, TDestination>();
+            return Yam.Map<TDestination>(source);
+        }
     }
 }
