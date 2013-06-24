@@ -61,7 +61,7 @@ namespace SimpleMapperUnitTests
                 Weight = 3.4
             };
 
-            var actual = Yam<SaleItem, Product>.Map(expected)
+            var actual = Yam<SaleItem, Product>.Map(expected);
                 
 
             Assert.AreEqual(expected.Description, actual.Description);
