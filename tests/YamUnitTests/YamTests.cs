@@ -187,10 +187,10 @@ namespace SimpleMapperUnitTests
         [Test]
         public void Map_TestMappingPropertiesThatAreGenericLists_WhenAMappingForThoseDataTypesExists()
         {
-            SaleItem SaleItem1 = new SaleItem { Description = "SaleItem 1", Id = 1, Weight = 3.5 };
-            SaleItem SaleItem2 = new SaleItem { Description = "SaleItem 2", Id = 2, Weight = 4.7 };
-            List<SaleItem> SaleItems = new List<SaleItem> { SaleItem1, SaleItem2 };
-            Order order = new Order { Items = SaleItems };
+            SaleItem saleItem1 = new SaleItem { Description = "SaleItem 1", Id = 1, Weight = 3.5 };
+            SaleItem saleItem2 = new SaleItem { Description = "SaleItem 2", Id = 2, Weight = 4.7 };
+            List<SaleItem> saleItems = new List<SaleItem> { saleItem1, saleItem2 };
+            Order order = new Order { Items = saleItems };
 
             Yam.CreateMap(typeof(Order), typeof(Invoice));
             Yam.CreateMap(typeof(SaleItem), typeof(Product));

@@ -41,7 +41,7 @@ namespace Yams
             {
                 if (sourceType.IsGenericEnumerable() && destinationType.IsGenericCollection())
                 {
-                    return Yam.MapLists(sourceType, destinationType, source);
+                    return Yam.MapLists(destinationType, source);
                 }
 
                 if (sourceType.Name == destinationType.Name)
@@ -137,7 +137,6 @@ namespace Yams
 
         public static TDestination Map<TDestination>(object source)
         {
-            TypeMap map = Yam.GetMap(source.GetType(), typeof(TDestination));
             return (TDestination)Yam.Map(source, typeof(TDestination));
         }
         #endregion
@@ -172,7 +171,7 @@ namespace Yams
 
                 if (sourceProperty.PropertyType.IsGenericEnumerable() && destinationProperty.PropertyType.IsGenericCollection())
                 {
-                    var destinationValue = Yam.MapLists(sourceProperty.PropertyType, destinationProperty.PropertyType, sourceValue);
+                    var destinationValue = Yam.MapLists(destinationProperty.PropertyType, sourceValue);
                     destinationProperty.SetValue(destination, destinationValue, null);
                     return;
                 }
@@ -202,9 +201,8 @@ namespace Yams
             return commonPropertyNames;
         }
 
-        private static object MapLists(Type sourceType, Type destinationType, object sourceList)
+        private static object MapLists(Type destinationType, object sourceList)
         {
-            var sourceParameter = sourceType.GetGenericArguments()[0];
             var destinationParameter = destinationType.GetGenericArguments()[0];
 
             var destinationList = Activator.CreateInstance(destinationType);
@@ -221,11 +219,15 @@ namespace Yams
 
     public static class Yam<TSource, TDestination>
     {
-        public static TypeMap Use<TSource, TSourceProperty, TDestination, TDestinationProperty>(
+        public static TypeMap<TSource,TDestination> Use<TSourceProperty, TDestinationProperty>(
             Expression<Func<TSource, TSourceProperty>> sourceExpression,
             Expression<Func<TDestination, TDestinationProperty>> destinationExpression)
         {
-            return Yam.AddPropertyMap(sourceExpression, destinationExpression);
+            var typeMap = Yam.GetMap<TSource, TDestination>();
+            if (typeMap == null)
+                typeMap = Yam.CreateMap<TSource, TDestination>();
+            Yam.AddPropertyMap<TSource, TDestination, TSourceProperty, TDestinationProperty>(sourceExpression, destinationExpression);
+            return new TypeMap<TSource, TDestination>();
         }
 
         public static TDestination Map(TSource source)
