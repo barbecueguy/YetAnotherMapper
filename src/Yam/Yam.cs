@@ -176,13 +176,10 @@ namespace Yams
                     return;
                 }
 
-                if (ex.Message.Contains("cannot be converted"))
+                if (sourceValue is IConvertible)
                 {
-                    if (sourceValue is IConvertible)
-                    {
-                        destinationProperty.SetValue(destination, Convert.ChangeType(sourceValue, destinationProperty.PropertyType), null);
-                        return;
-                    }
+                    destinationProperty.SetValue(destination, Convert.ChangeType(sourceValue, destinationProperty.PropertyType), null);
+                    return;
                 }
 
                 throw;
