@@ -17,4 +17,6 @@ namespace Yams
 
         private readonly List<PropertyMap> propertyMaps = new List<PropertyMap>();
     }
+
+    public class TypeMap<TSource, TDestination> { }
 }
