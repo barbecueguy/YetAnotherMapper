@@ -159,7 +159,7 @@ namespace Yams
             {
                 destinationProperty.SetValue(destination, sourceValue, null);
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException)
             {
                 TypeMap typeMap = Yam.GetMap(sourceProperty.PropertyType, destinationProperty.PropertyType);
                 if (typeMap != null)
